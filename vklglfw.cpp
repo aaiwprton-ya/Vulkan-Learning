@@ -68,7 +68,7 @@ bool vkl_glfw::initVklGlfwInstance(vkl_glfw::VklGlfwInstance* p_instance)
     }
     p_instance->p_window = p_window;
     
-    p_instance->error.setText(VKLGLFW_TEXT_SUCCES);
+    p_instance->error.setText(VKLGLFW_TEXT_SUCCESS);
     return true;
 }
 

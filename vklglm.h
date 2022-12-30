@@ -8,7 +8,7 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
-#define VKLGLM_TEXT_SUCCES "VklGlm succes"
+#define VKLGLM_TEXT_SUCCESS "VklGlm succes"
 #define VKLGLM_TEXT_CLOSED "VklGlm closed"
 
 namespace vkl_glm

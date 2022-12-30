@@ -52,11 +52,66 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
         return false;
     }
     
-    uint32_t extensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-    p_instance->extensionCount = extensionCount;
+    p_instance->appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    p_instance->appInfo.pApplicationName = VKLVK_PROP_APPLICATIONNAME;
+    p_instance->appInfo.applicationVersion = VKLVK_PROP_APPLICATIONVERSION;
+    p_instance->appInfo.apiVersion = VK_MAKE_VERSION(1, 0, 0);
     
-    p_instance->error.setText(VKLVK_TEXT_SUCCES);
+    p_instance->instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    p_instance->instanceCreateInfo.pApplicationInfo = &(p_instance->appInfo);
+    
+    VkResult result = vkCreateInstance(
+        &(p_instance->instanceCreateInfo), 
+        nullptr, // allocator
+        &(p_instance->vkInstance));
+    
+    if (result != VK_SUCCESS)
+    {
+        p_instance->error.setText(VKLVK_TEXT_INITERROR);
+        return false;
+    }
+    
+    uint32_t extensionCount = 0;
+    result = vkEnumerateInstanceExtensionProperties(
+        nullptr, // ???
+        &extensionCount, 
+        nullptr); // ???
+    
+    p_instance->extensionCount = extensionCount;
+
+    if (result != VK_SUCCESS)
+    {
+        p_instance->error.setText(VKLVK_TEXT_INITERROR);
+        return false;
+    }
+    
+    // TODO geting extensions
+    
+    uint32_t physicalDeviceCount = 0;
+    result = vkEnumeratePhysicalDevices(
+        p_instance->vkInstance, 
+        &physicalDeviceCount, 
+        nullptr); // physicalDevices
+    
+    p_instance->physicalDeviceCount = physicalDeviceCount;
+    
+    if (result != VK_SUCCESS)
+    {
+        p_instance->error.setText(VKLVK_TEXT_INITERROR);
+        return false;
+    }
+    
+    if (p_instance->physicalDevices)
+    {
+        delete[] p_instance->physicalDevices;
+    }
+    p_instance->physicalDevices = new VkPhysicalDevice[physicalDeviceCount];
+    vkEnumeratePhysicalDevices(
+        p_instance->vkInstance, 
+        &physicalDeviceCount, 
+        p_instance->physicalDevices); // physicalDevices
+    
+    p_instance->error.setText(VKLVK_TEXT_SUCCESS);
     return true;
 }
 
@@ -75,6 +130,12 @@ bool vkl_vk::closeVklVkInstance(vkl_vk::VklVkInstance* p_instance)
     {
         return false;
     }
+    
+    if (p_instance->physicalDevices)
+    {
+        delete[] p_instance->physicalDevices;
+    }
+    
     p_instance->error.setText(VKLVK_TEXT_CLOSED);
     return true;
 }

@@ -51,7 +51,7 @@ bool vkl_glm::initVklGlmInstance(vkl_glm::VklGlmInstance* p_instance)
     {
         return false;
     }
-    p_instance->error.setText(VKLGLM_TEXT_SUCCES);
+    p_instance->error.setText(VKLGLM_TEXT_SUCCESS);
     return true;
 }
 

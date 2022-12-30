@@ -6,7 +6,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#define VKLGLFW_TEXT_SUCCES "VklGlfw succes"
+#define VKLGLFW_TEXT_SUCCESS "VklGlfw succes"
 #define VKLGLFW_TEXT_CLOSED "VklGlfw closed"
 #define VKLGLFW_TEXT_INITERROR "VklGlfw init error"
 

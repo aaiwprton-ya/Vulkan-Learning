@@ -30,6 +30,10 @@ int main(int argc, char** argv)
             << p_vkInstance->extensionCount 
             << " extensions in this Vulkan" 
             << std::endl;
+    std::cout << "Available " 
+            << p_vkInstance->physicalDeviceCount 
+            << " physical devices in the system" 
+            << std::endl;
     
     bool isExit = false;
     while (!isExit)
