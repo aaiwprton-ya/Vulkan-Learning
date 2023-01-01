@@ -51,6 +51,11 @@ public:
      uint32_t extensionCount = 0;
      uint32_t physicalDeviceCount = 0;
      VkPhysicalDevice* physicalDevices = nullptr;
+     VkPhysicalDeviceProperties* p_physicalDeviceProperties = nullptr;
+     VkPhysicalDeviceFeatures* p_physicalDeviceFeatures = nullptr;
+     VkPhysicalDeviceMemoryProperties* p_physicalDeviceMemoryProperties = nullptr;
+     uint32_t* p_queueFamilyPropertyCount = nullptr;
+     VkQueueFamilyProperties** pp_queueFamilyProperties = nullptr;
 };
 
 } // vkl_vk
