@@ -9,9 +9,12 @@
 #define VKLVK_TEXT_SUCCESS "VklVk succes"
 #define VKLVK_TEXT_CLOSED "VklVk closed"
 #define VKLVK_TEXT_INITERROR "VklVk init error"
+#define VKLVK_TEXT_CREATEDEVICEERROR "VklVk create device error"
 
 #define VKLVK_PROP_APPLICATIONNAME "Vulkan_Learning"
 #define VKLVK_PROP_APPLICATIONVERSION 1
+#define VKLVK_PROP_DEVISEQUEUECREATEINFOCOUNT 1
+#define VKLVK_PROP_PHYSICALDEVICEINDEX 0
 
 namespace vkl_vk
 {
@@ -44,10 +47,10 @@ public:
 struct VklVkInstance
 {
 public:
-     vkl_vk::VklVkError error;
-     VkApplicationInfo appInfo;
-     VkInstanceCreateInfo instanceCreateInfo;
-     VkInstance vkInstance;
+     vkl_vk::VklVkError error = {};
+     VkApplicationInfo appInfo = {};
+     VkInstanceCreateInfo instanceCreateInfo = {};
+     VkInstance vkInstance = {};
      uint32_t extensionCount = 0;
      uint32_t physicalDeviceCount = 0;
      VkPhysicalDevice* physicalDevices = nullptr;
@@ -56,6 +59,11 @@ public:
      VkPhysicalDeviceMemoryProperties* p_physicalDeviceMemoryProperties = nullptr;
      uint32_t* p_queueFamilyPropertyCount = nullptr;
      VkQueueFamilyProperties** pp_queueFamilyProperties = nullptr;
+     uint32_t queueCreateInfoCount = 0;
+     VkDeviceQueueCreateInfo* p_queueCreateInfos = nullptr;
+     VkPhysicalDeviceFeatures requiredPhysicalDeviceFeatures = {};
+     VkDeviceCreateInfo deviceCreateInfo = {};
+     VkDevice device = {};
 };
 
 } // vkl_vk

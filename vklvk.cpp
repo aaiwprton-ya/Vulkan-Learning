@@ -191,6 +191,53 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
             p_instance->pp_queueFamilyProperties[i]);
     }
     
+    // create device
+    if (p_instance->p_queueCreateInfos)
+    {
+        delete[] p_instance->p_queueCreateInfos;
+    }
+    p_instance->queueCreateInfoCount = VKLVK_PROP_DEVISEQUEUECREATEINFOCOUNT;
+    p_instance->p_queueCreateInfos = 
+        new VkDeviceQueueCreateInfo[p_instance->queueCreateInfoCount];
+    
+#if VKLVK_PROP_DEVISEQUEUECREATEINFOCOUNT >= 1
+    uint32_t index = 0;
+    p_instance->p_queueCreateInfos[index].sType = 
+        VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    p_instance->p_queueCreateInfos[index].pNext = nullptr;
+    p_instance->p_queueCreateInfos[index].queueFamilyIndex = 0;
+    p_instance->p_queueCreateInfos[index].queueCount = 1;
+    p_instance->p_queueCreateInfos[index].pQueuePriorities = nullptr;
+#endif
+    
+    p_instance->requiredPhysicalDeviceFeatures.multiDrawIndirect = 
+        p_instance->p_physicalDeviceFeatures[VKLVK_PROP_PHYSICALDEVICEINDEX].multiDrawIndirect;
+    p_instance->requiredPhysicalDeviceFeatures.tessellationShader = VK_TRUE;
+    p_instance->requiredPhysicalDeviceFeatures.geometryShader = VK_TRUE;
+    
+    p_instance->deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    p_instance->deviceCreateInfo.pNext = nullptr;
+    p_instance->deviceCreateInfo.flags = 0;
+    p_instance->deviceCreateInfo.queueCreateInfoCount = p_instance->queueCreateInfoCount;
+    p_instance->deviceCreateInfo.pQueueCreateInfos = p_instance->p_queueCreateInfos;
+    p_instance->deviceCreateInfo.enabledLayerCount = 0;
+    p_instance->deviceCreateInfo.ppEnabledLayerNames = nullptr;
+    p_instance->deviceCreateInfo.enabledExtensionCount = 0;
+    p_instance->deviceCreateInfo.ppEnabledExtensionNames = nullptr;
+    p_instance->deviceCreateInfo.pEnabledFeatures = nullptr;
+    
+    result = vkCreateDevice(
+        p_instance->physicalDevices[VKLVK_PROP_PHYSICALDEVICEINDEX], 
+        &(p_instance->deviceCreateInfo), 
+        nullptr, // pAllocator
+        &(p_instance->device));
+        
+    if (result != VK_SUCCESS)
+    {
+        p_instance->error.setText(VKLVK_TEXT_CREATEDEVICEERROR);
+        return false;
+    }
+    
     p_instance->error.setText(VKLVK_TEXT_SUCCESS);
     return true;
 }
@@ -241,6 +288,10 @@ bool vkl_vk::closeVklVkInstance(vkl_vk::VklVkInstance* p_instance)
             }
         }
         delete[] p_instance->pp_queueFamilyProperties;
+    }
+    if (p_instance->p_queueCreateInfos)
+    {
+        delete[] p_instance->p_queueCreateInfos;
     }
     
     p_instance->error.setText(VKLVK_TEXT_CLOSED);
