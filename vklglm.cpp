@@ -30,6 +30,7 @@ void vkl_glm::VklGlmError::setText(const char* p_text)
     {
         this->size += 1;
     }
+    this->size += 1;
     this->p_text = new char[this->size];
     char* p_dest = this->p_text;
     const char* p_data = p_text;

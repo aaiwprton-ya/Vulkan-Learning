@@ -44,14 +44,22 @@ int main(int argc, char** argv)
         return 1;
     }
     
-    std::cout << "Available " 
-            << p_vkInstance->extensionCount 
-            << " extensions in this Vulkan" 
-            << std::endl;
-    std::cout << "Available " 
-            << p_vkInstance->physicalDeviceCount 
-            << " physical devices in the system" 
-            << std::endl;
+    // print instance layers
+    std::cout << "Available " << p_vkInstance->instanceLayerPropertyCount 
+        << " instance layers" << std::endl;
+    for (uint32_t i = 0; i < p_vkInstance->instanceLayerPropertyCount; ++i)
+    {
+        std::cout << std::endl;
+        std::cout << "Layer " << i << ": " << std::endl;
+        std::cout << "layerName: " 
+            << p_vkInstance->p_instanceLayerProperties[i].layerName << std::endl
+            << "specVersion: " 
+            << p_vkInstance->p_instanceLayerProperties[i].specVersion << std::endl
+            << "implementationVersion: " 
+            << p_vkInstance->p_instanceLayerProperties[i].implementationVersion << std::endl
+            << "description: " 
+            << p_vkInstance->p_instanceLayerProperties[i].description << std::endl;
+    }
             
     // print physical device properties
     for (uint32_t i = 0; i < p_vkInstance->physicalDeviceCount; ++i)
@@ -256,6 +264,30 @@ int main(int argc, char** argv)
                 queueFlags, 
                 VK_QUEUE_OPTICAL_FLOW_BIT_NV);
 #endif
+        }
+    }
+    
+    // print device layers
+    std::cout << std::endl;
+    for (uint32_t i = 0; i < p_vkInstance->physicalDeviceCount; ++i)
+    {
+        std::cout << std::endl;
+        std::cout << "In " << p_vkInstance->p_physicalDeviceProperties[i].deviceName
+            << " available " << p_vkInstance->p_deviceLayerPropertyCounts[i] 
+            << " device layers" << std::endl;
+        
+        for (uint32_t j = 0; j < p_vkInstance->p_deviceLayerPropertyCounts[i]; ++j)
+        {
+            std::cout << std::endl;
+            std::cout << "Layer " << j << ": " << std::endl;
+            std::cout << "layerName: " 
+                << p_vkInstance->pp_deviceLayerProperties[i][j].layerName << std::endl
+                << "specVersion: " 
+                << p_vkInstance->pp_deviceLayerProperties[i][j].specVersion << std::endl
+                << "implementationVersion: " 
+                << p_vkInstance->pp_deviceLayerProperties[i][j].implementationVersion << std::endl
+                << "description: " 
+                << p_vkInstance->pp_deviceLayerProperties[i][j].description << std::endl;
         }
     }
     
