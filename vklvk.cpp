@@ -83,23 +83,34 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
     
     // get instance extension count
     result = vkEnumerateInstanceExtensionProperties(
-        nullptr, // ???
-        &(p_instance->extensionCount), 
-        nullptr); // ???
+        nullptr, // pLayerName
+        &(p_instance->instanceExtensionPropertyCount), 
+        nullptr); // pProperties
     if (result != VK_SUCCESS)
     {
         p_instance->error.setText(VKLVK_TEXT_INITERROR);
         return false;
     }
     
-    // TODO getting instance extensions
+    // get instance extensions
+    if (p_instance->p_instanceExtensionProperties)
+    {
+        delete[] p_instance->p_instanceExtensionProperties;
+    }
+    p_instance->p_instanceExtensionProperties = 
+        new VkExtensionProperties[p_instance->instanceExtensionPropertyCount];
     
-    // init instance
-    p_instance->appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    p_instance->appInfo.pApplicationName = VKLVK_PROP_APPLICATIONNAME;
-    p_instance->appInfo.applicationVersion = VKLVK_PROP_APPLICATIONVERSION;
-    p_instance->appInfo.apiVersion = VK_MAKE_VERSION(1, 1, 0);
+    result = vkEnumerateInstanceExtensionProperties(
+        nullptr, // pLayerName
+        &(p_instance->instanceExtensionPropertyCount), 
+        p_instance->p_instanceExtensionProperties);
+    if (result != VK_SUCCESS)
+    {
+        p_instance->error.setText(VKLVK_TEXT_INITERROR);
+        return false;
+    }
     
+    // set requered instance layers
     if (p_instance->pp_enabledInstanceLayerNames)
     {
         for (uint32_t i = 0; i < p_instance->enabledInsatnceLayerCount; ++i)
@@ -109,34 +120,59 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
         delete[] p_instance->pp_enabledInstanceLayerNames;
     }
     p_instance->enabledInsatnceLayerCount = VKLVK_PROP_ENABLEDINSTANCELAYERCOUNT;
-    p_instance->pp_enabledInstanceLayerNames = new char*[p_instance->enabledInsatnceLayerCount];
+    if (p_instance->enabledInsatnceLayerCount > 0)
+    {
+        p_instance->pp_enabledInstanceLayerNames = 
+            new char*[p_instance->enabledInsatnceLayerCount];
+    }
     
-#define VKLVK_DO_INITINSTANCELAYERNAMES(index, layerName)                           \
-{                                                                                   \
-    uint32_t instanceLayerIndex = index;                                            \
-    size_t lengthName = 0;                                                          \
-    __initString(layerName,                                                         \
-        &lengthName,                                                                \
-        nullptr);                                                                   \
-    p_instance->pp_enabledInstanceLayerNames[instanceLayerIndex] = new char[lengthName];    \
-    __initString(layerName,                                                         \
-        &lengthName,                                                                \
-        p_instance->pp_enabledInstanceLayerNames[instanceLayerIndex]);                      \
-}
+    for (uint32_t i = 0; i < p_instance->enabledInsatnceLayerCount; ++i)
+    {
+        size_t lengthName = 0;
+        __initString(VKLVK_PROP_INSTANCELAYERNAMES[i], 
+            &lengthName, 
+            nullptr); // dest
+        p_instance->pp_enabledInstanceLayerNames[i] = new char[lengthName];
+        __initString(VKLVK_PROP_INSTANCELAYERNAMES[i], 
+            &lengthName, 
+            p_instance->pp_enabledInstanceLayerNames[i]);
+    }
     
-#if VKLVK_PROP_ENABLEDINSTANCELAYERCOUNT >= 1
-    VKLVK_DO_INITINSTANCELAYERNAMES(0, VKLVK_PROP_INSTANCELAYERNAME_VAL0)
-#endif
-#if VKLVK_PROP_ENABLEDINSTANCELAYERCOUNT >= 2
-    VKLVK_DO_INITINSTANCELAYERNAMES(1, VKLVK_PROP_INSTANCELAYERNAME_VAL1)
-#endif
-#if VKLVK_PROP_ENABLEDINSTANCELAYERCOUNT >= 3
-    VKLVK_DO_INITINSTANCELAYERNAMES(2, VKLVK_PROP_INSTANCELAYERNAME_VAL2)
-#endif
-#if VKLVK_PROP_ENABLEDINSTANCELAYERCOUNT >= 4
-    VKLVK_DO_INITINSTANCELAYERNAMES(3, VKLVK_PROP_INSTANCELAYERNAME_VAL3)
-#endif
+    // set required instance extensions
+    if (p_instance->pp_enabledInstanceExtensionNames)
+    {
+        for (uint32_t i = 0; i < p_instance->enabledInsatnceExtensionCount; ++i)
+        {
+            delete[] p_instance->pp_enabledInstanceExtensionNames[i];
+        }
+        delete[] p_instance->pp_enabledInstanceExtensionNames;
+    }
+    p_instance->enabledInsatnceExtensionCount = VKLVK_PROP_ENABLEDINSTANCEEXTENSIONCOUNT;
+    if (p_instance->enabledInsatnceExtensionCount > 0)
+    {
+        p_instance->pp_enabledInstanceExtensionNames = 
+            new char*[p_instance->enabledInsatnceExtensionCount];
+    }
     
+    for (uint32_t i = 0; i < p_instance->enabledInsatnceExtensionCount; ++i)
+    {
+        size_t lengthName = 0;
+        __initString(VKLVK_PROP_INSTANCEEXTENSIONNAMES[i], 
+            &lengthName, 
+            nullptr); // dest
+        p_instance->pp_enabledInstanceExtensionNames[i] = new char[lengthName];
+        __initString(VKLVK_PROP_INSTANCEEXTENSIONNAMES[i], 
+            &lengthName, 
+            p_instance->pp_enabledInstanceExtensionNames[i]);
+    }
+    
+    // set application info
+    p_instance->appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    p_instance->appInfo.pApplicationName = VKLVK_PROP_APPLICATIONNAME;
+    p_instance->appInfo.applicationVersion = VKLVK_PROP_APPLICATIONVERSION;
+    p_instance->appInfo.apiVersion = VK_MAKE_VERSION(1, 1, 0);
+    
+    // init instance
     p_instance->instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     p_instance->instanceCreateInfo.pNext = nullptr;
     p_instance->instanceCreateInfo.flags = 0;
@@ -283,7 +319,7 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
         }
     }
     
-    // get physical device layers
+    // getting physical device layers
     if (p_instance->pp_deviceLayerProperties)
     {
         for (uint32_t i = 0; i < p_instance->physicalDeviceCount; ++i)
@@ -312,6 +348,56 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
         }
     }
     
+    // get physical device extension count
+    if (p_instance->p_deviceExtensionPropertyCounts)
+    {
+        delete[] p_instance->p_deviceExtensionPropertyCounts;
+    }
+    p_instance->p_deviceExtensionPropertyCounts = new uint32_t[p_instance->physicalDeviceCount];
+    for (uint32_t i = 0; i < p_instance->physicalDeviceCount; ++i)
+    {
+        result = vkEnumerateDeviceExtensionProperties(
+            p_instance->p_physicalDevices[i], 
+            nullptr, // pLayerName
+            &(p_instance->p_deviceExtensionPropertyCounts[i]), 
+            nullptr); // pProperties
+        if (result != VK_SUCCESS)
+        {
+            p_instance->error.setText(VKLVK_TEXT_INITERROR);
+            return false;
+        }
+    }
+    
+    // get physical device extensions
+    if (p_instance->pp_deviceExtensionProperties)
+    {
+        for (uint32_t i = 0; i < p_instance->physicalDeviceCount; ++i)
+        {
+            delete[] p_instance->pp_deviceExtensionProperties[i];
+        }
+        delete[] p_instance->pp_deviceExtensionProperties;
+    }
+    p_instance->pp_deviceExtensionProperties = 
+        new VkExtensionProperties*[p_instance->physicalDeviceCount];
+    for (uint32_t i = 0; i < p_instance->physicalDeviceCount; ++i)
+    {
+        p_instance->pp_deviceExtensionProperties[i] = 
+            new VkExtensionProperties[p_instance->p_deviceExtensionPropertyCounts[i]];
+    }
+    for (uint32_t i = 0; i < p_instance->physicalDeviceCount; ++i)
+    {
+        result = vkEnumerateDeviceExtensionProperties(
+            p_instance->p_physicalDevices[i],
+            nullptr, // pLayerName 
+            &(p_instance->p_deviceExtensionPropertyCounts[i]), 
+            p_instance->pp_deviceExtensionProperties[i]);
+        if (result != VK_SUCCESS)
+        {
+            p_instance->error.setText(VKLVK_TEXT_INITERROR);
+            return false;
+        }
+    }
+    
     // set required physical device layers
     if (p_instance->pp_enabledDeviceLayerNames)
     {
@@ -322,35 +408,51 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
         delete[] p_instance->pp_enabledDeviceLayerNames;
     }
     p_instance->enabledDeviceLayerCount = VKLVK_PROP_ENABLEDDEVICELAYERCOUNT;
-    p_instance->pp_enabledDeviceLayerNames = new char*[p_instance->enabledDeviceLayerCount];
+    if (p_instance->enabledDeviceLayerCount > 0)
+    {
+        p_instance->pp_enabledDeviceLayerNames = 
+            new char*[p_instance->enabledDeviceLayerCount];
+    }
     
-#define VKLVK_DO_INITDEVICELAYERNAMES(index, layerName)                                 \
-{                                                                                       \
-    uint32_t deviceLayerIndex = index;                                                  \
-    size_t lengthName = 0;                                                              \
-    __initString(layerName,                                                             \
-        &lengthName,                                                                    \
-        nullptr);                                                                       \
-    p_instance->pp_enabledDeviceLayerNames[deviceLayerIndex] = new char[lengthName];    \
-    __initString(layerName,                                                             \
-        &lengthName,                                                                    \
-        p_instance->pp_enabledDeviceLayerNames[deviceLayerIndex]);                      \
-}
-    
-#if VKLVK_PROP_ENABLEDDEVICELAYERCOUNT >= 1
-    VKLVK_DO_INITDEVICELAYERNAMES(0, VKLVK_PROP_DEVICELAYERNAME_VAL0)
-#endif
-#if VKLVK_PROP_ENABLEDDEVICELAYERCOUNT >= 2
-    VKLVK_DO_INITDEVICELAYERNAMES(1, VKLVK_PROP_DEVICELAYERNAME_VAL1)
-#endif
-#if VKLVK_PROP_ENABLEDDEVICELAYERCOUNT >= 3
-    VKLVK_DO_INITDEVICELAYERNAMES(2, VKLVK_PROP_DEVICELAYERNAME_VAL2)
-#endif
-#if VKLVK_PROP_ENABLEDDEVICELAYERCOUNT >= 4
-    VKLVK_DO_INITDEVICELAYERNAMES(3, VKLVK_PROP_DEVICELAYERNAME_VAL3)
-#endif
+    for (uint32_t i = 0; i < p_instance->enabledDeviceLayerCount; ++i)
+    {
+        size_t lengthName = 0;
+        __initString(VKLVK_PROP_DEVICELAYERNAMES[i], 
+            &lengthName, 
+            nullptr); // dest
+        p_instance->pp_enabledDeviceLayerNames[i] = new char[lengthName];
+        __initString(VKLVK_PROP_DEVICELAYERNAMES[i], 
+            &lengthName, 
+            p_instance->pp_enabledDeviceLayerNames[i]);
+    }
 
-    // TODO getting device extensions
+    // set required physical device extensions
+    if (p_instance->pp_enabledDeviceExtensionNames)
+    {
+        for (uint32_t i = 0; i < p_instance->enabledDeviceExtensionCount; ++i)
+        {
+            delete[] p_instance->pp_enabledDeviceExtensionNames[i];
+        }
+        delete[] p_instance->pp_enabledDeviceExtensionNames;
+    }
+    p_instance->enabledDeviceExtensionCount = VKLVK_PROP_ENABLEDDEVICEEXTENSIONCOUNT;
+    if (p_instance->enabledDeviceExtensionCount > 0)
+    {
+        p_instance->pp_enabledDeviceExtensionNames = 
+            new char*[p_instance->enabledDeviceExtensionCount];
+    }
+    
+    for (uint32_t i = 0; i < p_instance->enabledDeviceExtensionCount; ++i)
+    {
+        size_t lengthName = 0;
+        __initString(VKLVK_PROP_DEVICEEXTENSIONNAMES[i], 
+            &lengthName, 
+            nullptr); // dest
+        p_instance->pp_enabledDeviceExtensionNames[i] = new char[lengthName];
+        __initString(VKLVK_PROP_DEVICEEXTENSIONNAMES[i], 
+            &lengthName, 
+            p_instance->pp_enabledDeviceExtensionNames[i]);
+    }
     
     // set queue priorities
     p_instance->queueCreateInfoCount = VKLVK_PROP_DEVISEQUEUECREATEINFOCOUNT;
@@ -453,6 +555,10 @@ bool vkl_vk::closeVklVkInstance(vkl_vk::VklVkInstance* p_instance)
     {
         delete[] p_instance->p_instanceLayerProperties;
     }
+    if (p_instance->p_instanceExtensionProperties)
+    {
+        delete[] p_instance->p_instanceExtensionProperties;
+    }
     if (p_instance->pp_enabledInstanceLayerNames)
     {
         for (uint32_t i = 0; i < p_instance->enabledInsatnceLayerCount; ++i)
@@ -460,6 +566,14 @@ bool vkl_vk::closeVklVkInstance(vkl_vk::VklVkInstance* p_instance)
             delete[] p_instance->pp_enabledInstanceLayerNames[i];
         }
         delete[] p_instance->pp_enabledInstanceLayerNames;
+    }
+    if (p_instance->pp_enabledInstanceExtensionNames)
+    {
+        for (uint32_t i = 0; i < p_instance->enabledInsatnceExtensionCount; ++i)
+        {
+            delete[] p_instance->pp_enabledInstanceExtensionNames[i];
+        }
+        delete[] p_instance->pp_enabledInstanceExtensionNames;
     }
     if (p_instance->p_physicalDevices)
     {
@@ -504,6 +618,14 @@ bool vkl_vk::closeVklVkInstance(vkl_vk::VklVkInstance* p_instance)
         }
         delete[] p_instance->pp_deviceLayerProperties;
     }
+    if (p_instance->pp_deviceExtensionProperties)
+    {
+        for (uint32_t i = 0; i < p_instance->physicalDeviceCount; ++i)
+        {
+            delete[] p_instance->pp_deviceExtensionProperties[i];
+        }
+        delete[] p_instance->pp_deviceExtensionProperties;
+    }
     if (p_instance->pp_enabledDeviceLayerNames)
     {
         for (uint32_t i = 0; i < p_instance->enabledDeviceLayerCount; ++i)
@@ -511,6 +633,14 @@ bool vkl_vk::closeVklVkInstance(vkl_vk::VklVkInstance* p_instance)
             delete[] p_instance->pp_enabledDeviceLayerNames[i];
         }
         delete[] p_instance->pp_enabledDeviceLayerNames;
+    }
+    if (p_instance->pp_enabledDeviceExtensionNames)
+    {
+        for (uint32_t i = 0; i < p_instance->enabledDeviceExtensionCount; ++i)
+        {
+            delete[] p_instance->pp_enabledDeviceExtensionNames[i];
+        }
+        delete[] p_instance->pp_enabledDeviceExtensionNames;
     }
     if (p_instance->pp_queueCreateInfoPriorities)
     {

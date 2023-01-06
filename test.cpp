@@ -60,6 +60,19 @@ int main(int argc, char** argv)
             << "description: " 
             << p_vkInstance->p_instanceLayerProperties[i].description << std::endl;
     }
+    
+    // print instance extensions
+    std::cout << "Available " << p_vkInstance->instanceExtensionPropertyCount 
+        << " instance extensions" << std::endl;
+    for (uint32_t i = 0; i < p_vkInstance->instanceExtensionPropertyCount; ++i)
+    {
+        std::cout << std::endl;
+        std::cout << "Extension " << i << ": " << std::endl;
+        std::cout << "extensionName: " 
+            << p_vkInstance->p_instanceExtensionProperties[i].extensionName << std::endl
+            << "specVersion: " 
+            << p_vkInstance->p_instanceLayerProperties[i].specVersion << std::endl;
+    }
             
     // print physical device properties
     for (uint32_t i = 0; i < p_vkInstance->physicalDeviceCount; ++i)
@@ -288,6 +301,26 @@ int main(int argc, char** argv)
                 << p_vkInstance->pp_deviceLayerProperties[i][j].implementationVersion << std::endl
                 << "description: " 
                 << p_vkInstance->pp_deviceLayerProperties[i][j].description << std::endl;
+        }
+    }
+    
+    // print device extensions
+    std::cout << std::endl;
+    for (uint32_t i = 0; i < p_vkInstance->physicalDeviceCount; ++i)
+    {
+        std::cout << std::endl;
+        std::cout << "In " << p_vkInstance->p_physicalDeviceProperties[i].deviceName
+            << " available " << p_vkInstance->p_deviceExtensionPropertyCounts[i] 
+            << " device extensions" << std::endl;
+        
+        for (uint32_t j = 0; j < p_vkInstance->p_deviceExtensionPropertyCounts[i]; ++j)
+        {
+            std::cout << std::endl;
+            std::cout << "Extension " << j << ": " << std::endl;
+            std::cout << "extensionName: " 
+                << p_vkInstance->pp_deviceExtensionProperties[i][j].extensionName << std::endl
+                << "specVersion: " 
+                << p_vkInstance->pp_deviceExtensionProperties[i][j].specVersion << std::endl;
         }
     }
     

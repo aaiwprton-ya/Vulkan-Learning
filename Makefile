@@ -10,7 +10,7 @@ vklglm.o: vklglm.cpp vklglm.h
 vklglfw.o: vklglfw.cpp vklglfw.h
 	g++ $(CFLAGS) -c -o $@ $<
 
-vklvk.o: vklvk.cpp vklvk.h
+vklvk.o: vklvk.cpp vklvk.h vklvk_requireds.h
 	g++ $(CFLAGS) -c -o $@ $<
 
 .PHONY: test clean
