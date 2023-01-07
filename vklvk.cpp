@@ -1,5 +1,9 @@
 #include "vklvk.h"
 
+/*
+    ERROR
+*/
+
 vkl_vk::VklVkError::VklVkError()
     : p_text(nullptr), size(0)
 {}
@@ -46,6 +50,10 @@ const char* vkl_vk::VklVkError::get()
     return this->p_text;
 }
 
+/*
+    INSTANCE
+*/
+
 bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
 {
     if (!p_instance)
@@ -53,6 +61,21 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
         return false;
     }
     VkResult result;
+    
+    // set used allocator
+    if (p_instance->allocator)
+    {
+        delete p_instance->allocator;
+    }
+    p_instance->allocator = nullptr;
+#if VKLVK_PROP_CASTOMALLOCATOR > 0
+    p_instance->allocator = new vkl_vk::VklVkAllocator();
+#endif
+    VkAllocationCallbacks* vkAllocationCallbacks = nullptr;
+    if (p_instance->allocator)
+    {
+        vkAllocationCallbacks = (VkAllocationCallbacks*)*(p_instance->allocator);
+    }
     
     // get instance layer count
     result = vkEnumerateInstanceLayerProperties(
@@ -184,7 +207,7 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
     
     result = vkCreateInstance(
         &(p_instance->instanceCreateInfo), 
-        nullptr, // allocator
+        vkAllocationCallbacks, 
         &(p_instance->vkInstance));
     
     if (result != VK_SUCCESS)
@@ -213,7 +236,7 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
     result = vkEnumeratePhysicalDevices(
         p_instance->vkInstance, 
         &(p_instance->physicalDeviceCount), 
-        p_instance->p_physicalDevices); // physicalDevices
+        p_instance->p_physicalDevices);
     if (result != VK_SUCCESS)
     {
         p_instance->error.setText(VKLVK_TEXT_INITERROR);
@@ -522,7 +545,7 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
     result = vkCreateDevice(
         p_instance->p_physicalDevices[VKLVK_PROP_PHYSICALDEVICEINDEX], 
         &(p_instance->deviceCreateInfo), 
-        nullptr, // pAllocator
+        vkAllocationCallbacks, 
         &(p_instance->device));
         
     if (result != VK_SUCCESS)
@@ -551,6 +574,19 @@ bool vkl_vk::closeVklVkInstance(vkl_vk::VklVkInstance* p_instance)
         return false;
     }
     
+    vkDeviceWaitIdle(p_instance->device);
+    vkDestroyDevice(
+        p_instance->device, 
+        nullptr); // pAllocator
+    
+    vkDestroyInstance(
+        p_instance->vkInstance, 
+        nullptr); // pAllocator
+    
+    if (p_instance->allocator)
+    {
+        delete p_instance->allocator;
+    }
     if (p_instance->p_instanceLayerProperties)
     {
         delete[] p_instance->p_instanceLayerProperties;

@@ -6,6 +6,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include "vklvk_allocator.h"
 #include "vklvk_requireds.h"
 
 #define VKLVK_TEXT_SUCCESS "VklVk success"
@@ -21,6 +22,8 @@
 #define VKVKL_PROP_REQUIREDQUEUECOUNT_VAL0 1
 
 #define VKLVK_PROP_PHYSICALDEVICEINDEX 0
+
+#define VKLVK_PROP_CASTOMALLOCATOR 0
 
 namespace vkl_vk
 {
@@ -56,6 +59,7 @@ struct VklVkInstance
 {
 public:
      vkl_vk::VklVkError error = {};
+     vkl_vk::VklVkAllocator* allocator = nullptr;
      uint32_t instanceLayerPropertyCount = 0;
      VkLayerProperties* p_instanceLayerProperties = nullptr;
      uint32_t instanceExtensionPropertyCount = 0;
