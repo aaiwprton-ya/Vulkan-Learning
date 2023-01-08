@@ -202,8 +202,10 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
     p_instance->instanceCreateInfo.pApplicationInfo = &(p_instance->appInfo);
     p_instance->instanceCreateInfo.enabledLayerCount = p_instance->enabledInsatnceLayerCount;
     p_instance->instanceCreateInfo.ppEnabledLayerNames = p_instance->pp_enabledInstanceLayerNames;
-    p_instance->instanceCreateInfo.enabledExtensionCount = 0;
-    p_instance->instanceCreateInfo.ppEnabledExtensionNames = nullptr;
+    p_instance->instanceCreateInfo.enabledExtensionCount = 
+        p_instance->enabledInsatnceExtensionCount;
+    p_instance->instanceCreateInfo.ppEnabledExtensionNames = 
+        p_instance->pp_enabledInstanceExtensionNames;
     
     result = vkCreateInstance(
         &(p_instance->instanceCreateInfo), 
@@ -215,6 +217,9 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
         p_instance->error.setText(VKLVK_TEXT_INITERROR);
         return false;
     }
+    
+    // TODO get instance extension function address
+    // PFN_vkVoidFunction vkGetInstanceProcAddr(VkInstance instance, const char* pName);
     
     // get physical device count
     result = vkEnumeratePhysicalDevices(
@@ -538,9 +543,9 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
     p_instance->deviceCreateInfo.pQueueCreateInfos = p_instance->p_queueCreateInfos;
     p_instance->deviceCreateInfo.enabledLayerCount = p_instance->enabledDeviceLayerCount;
     p_instance->deviceCreateInfo.ppEnabledLayerNames = p_instance->pp_enabledDeviceLayerNames;
-    p_instance->deviceCreateInfo.enabledExtensionCount = 0;
-    p_instance->deviceCreateInfo.ppEnabledExtensionNames = nullptr;
-    p_instance->deviceCreateInfo.pEnabledFeatures = nullptr;
+    p_instance->deviceCreateInfo.enabledExtensionCount = p_instance->enabledDeviceExtensionCount;
+    p_instance->deviceCreateInfo.ppEnabledExtensionNames = p_instance->pp_enabledDeviceExtensionNames;
+    p_instance->deviceCreateInfo.pEnabledFeatures = &(p_instance->requiredPhysicalDeviceFeatures);
     
     result = vkCreateDevice(
         p_instance->p_physicalDevices[VKLVK_PROP_PHYSICALDEVICEINDEX], 
@@ -553,6 +558,9 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
         p_instance->error.setText(VKLVK_TEXT_CREATEDEVICEERROR);
         return false;
     }
+    
+    // TODO get device extension function address
+    // PFN_vkVoidFunction vkGetDeviceProcAddr(VkDevice device, const char* pName);
     
     p_instance->error.setText(VKLVK_TEXT_SUCCESS);
     return true;
@@ -574,14 +582,21 @@ bool vkl_vk::closeVklVkInstance(vkl_vk::VklVkInstance* p_instance)
         return false;
     }
     
+    // get used allocator
+    VkAllocationCallbacks* vkAllocationCallbacks = nullptr;
+    if (p_instance->allocator)
+    {
+        vkAllocationCallbacks = (VkAllocationCallbacks*)*(p_instance->allocator);
+    }
+    
     vkDeviceWaitIdle(p_instance->device);
     vkDestroyDevice(
         p_instance->device, 
-        nullptr); // pAllocator
+        vkAllocationCallbacks); // pAllocator
     
     vkDestroyInstance(
         p_instance->vkInstance, 
-        nullptr); // pAllocator
+        vkAllocationCallbacks); // pAllocator
     
     if (p_instance->allocator)
     {
