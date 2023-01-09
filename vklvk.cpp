@@ -592,11 +592,11 @@ bool vkl_vk::closeVklVkInstance(vkl_vk::VklVkInstance* p_instance)
     vkDeviceWaitIdle(p_instance->device);
     vkDestroyDevice(
         p_instance->device, 
-        vkAllocationCallbacks); // pAllocator
+        vkAllocationCallbacks);
     
     vkDestroyInstance(
         p_instance->vkInstance, 
-        vkAllocationCallbacks); // pAllocator
+        vkAllocationCallbacks);
     
     if (p_instance->allocator)
     {
