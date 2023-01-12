@@ -8,6 +8,7 @@
 
 #include "vklvk_allocator.h"
 #include "vklvk_requireds.h"
+#include "vklvk_resource_manager.h"
 
 #define VKLVK_TEXT_SUCCESS "VklVk success"
 #define VKLVK_TEXT_CLOSED "VklVk closed"
