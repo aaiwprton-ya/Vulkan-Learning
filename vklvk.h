@@ -61,6 +61,7 @@ struct VklVkInstance
 public:
      vkl_vk::VklVkError error = {};
      vkl_vk::VklVkAllocator* allocator = nullptr;
+     vkl_vk::VklVkResourceManager* p_resourceManager;
      uint32_t instanceLayerPropertyCount = 0;
      VkLayerProperties* p_instanceLayerProperties = nullptr;
      uint32_t instanceExtensionPropertyCount = 0;

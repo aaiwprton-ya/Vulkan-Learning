@@ -562,6 +562,46 @@ bool vkl_vk::initVklVkInstance(vkl_vk::VklVkInstance* p_instance)
     // TODO get device extension function address
     // PFN_vkVoidFunction vkGetDeviceProcAddr(VkDevice device, const char* pName);
     
+    // init resource manager
+    if (p_instance->p_resourceManager)
+    {
+        delete p_instance->p_resourceManager;
+    }
+    p_instance->p_resourceManager = 
+        new vkl_vk::VklVkResourceManager(p_instance->device, vkAllocationCallbacks);
+    
+    // test resource manager
+    // create resources
+    VklVkResourcePoolDesc bufferPool;
+    p_instance->p_resourceManager->createPool(VKLVK_POOLTYPE_BUFFER_STANDARD, &bufferPool);
+    
+    VklVkResource buffer;
+    p_instance->p_resourceManager->createResource(bufferPool, &buffer);
+    
+    VklVkResourcePoolDesc imagePool;
+    p_instance->p_resourceManager->createPool(VKLVK_POOLTYPE_IMAGE_STANDARD, &imagePool);
+    
+    VklVkResource image;
+    p_instance->p_resourceManager->createResource(imagePool, &image);
+    
+    VklVkResourcePoolDesc bufferViewPool;
+    p_instance->p_resourceManager->createPool(VKLVK_POOLTYPE_BUFFERVIEW_STANDARD, &bufferViewPool);
+    
+    VklVkResource bufferView; // don't work becouse no memory bound
+    // p_instance->p_resourceManager->createResource(bufferViewPool, &buffer, &bufferView);
+    
+    VklVkResourcePoolDesc imageViewPool;
+    p_instance->p_resourceManager->createPool(VKLVK_POOLTYPE_IMAGEVIEW_STANDARD, &imageViewPool);
+    
+    VklVkResource imageView; // don't work becouse no memory bound 
+    // p_instance->p_resourceManager->createResource(imageViewPool, &image, &imageView);
+    
+    // destroy resources
+    p_instance->p_resourceManager->freeResource(&buffer);
+    p_instance->p_resourceManager->freeResource(&image);
+    // p_instance->p_resourceManager->freeResource(&bufferView);
+    // p_instance->p_resourceManager->freeResource(&imageView);
+    
     p_instance->error.setText(VKLVK_TEXT_SUCCESS);
     return true;
 }
@@ -601,6 +641,10 @@ bool vkl_vk::closeVklVkInstance(vkl_vk::VklVkInstance* p_instance)
     if (p_instance->allocator)
     {
         delete p_instance->allocator;
+    }
+    if (p_instance->p_resourceManager)
+    {
+        delete p_instance->p_resourceManager;
     }
     if (p_instance->p_instanceLayerProperties)
     {

@@ -1,7 +1,7 @@
 CFLAGS = -std=c++11 -g
 LDFLAGS = -lvulkan -lglfw -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 path := bin
-srcs := vklglm.cpp vklglfw.cpp vklvk.cpp vklvk_allocator.cpp vklvk_resource_manager.cpp vklvk_memory_manager.cpp
+srcs := vklglm.cpp vklglfw.cpp vklvk.cpp vklvk_allocator.cpp vklvk_resource_manager.cpp vklvk_resource_types.cpp vklvk_memory_manager.cpp
 objs := $(srcs:.cpp=.o)
 objs_path := $(addprefix $(path)/,$(srcs:.cpp=.o))
 
@@ -26,13 +26,19 @@ vklvk_allocator.o: vklvk_allocator.cpp vklvk_allocator.h | $(path)
 vklvk_resource_manager.o: vklvk_resource_manager.cpp vklvk_resource_manager.h | $(path)
 	g++ $(CFLAGS) -c -o $(path)/$@ $<
 
+vklvk_resource_types.o: vklvk_resource_types.cpp vklvk_resource_types.h | $(path)
+	g++ $(CFLAGS) -c -o $(path)/$@ $<
+
 vklvk_memory_manager.o: vklvk_memory_manager.cpp vklvk_memory_manager.h | $(path)
 	g++ $(CFLAGS) -c -o $(path)/$@ $<
 
-.PHONY: test clean
+.PHONY: test debug clean
 
 test: vulkan_test
 	./$(path)/vulkan_test
+
+debug: vulkan_test
+	gdb ./$(path)/vulkan_test
 
 clean:
 	rm -rf $(path)
